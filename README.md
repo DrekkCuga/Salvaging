@@ -11,3 +11,4 @@ Basic notifications and UI for semi-AFK salvaging with the new Sailing skill.
   - "Crew Stop Salvage Notification", Similar to above but when the crewmates stop salvaging. This is useful for knowing when there are no active shipwrecks in range.
   - "Player Stop Salvage Notification", Notifies when the player has stopped salvaging, this could be due to a full inventory, active shipwrecked changed or really anything
   - "Player Stop Sorting Notification", this will alert you when you are finished sorting salvage, so you can prepare the next inventory
+  - "Full Cargo Notification", notifies you when the ship cargo is full

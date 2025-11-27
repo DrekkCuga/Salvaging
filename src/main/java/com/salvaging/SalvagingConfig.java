@@ -40,4 +40,13 @@ public interface SalvagingConfig extends Config
     default Notification playerStopSortNotif() {
         return Notification.ON;
     }
+
+    @ConfigItem(
+            keyName = "cargoFullNotif",
+            name = "Full Cargo Notification",
+            description = "Send notification when ships cargo is full"
+    )
+    default Notification cargoFullNotif() {
+        return Notification.ON;
+    }
 }

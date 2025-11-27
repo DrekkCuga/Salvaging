@@ -54,6 +54,7 @@ public class SalvagingPlugin extends Plugin
     private boolean playerSalvageTracker = false;
     private boolean playerSortTracker = false;
     private boolean crewSalvageTracker = false;
+    private boolean fullCargoTracker = false;
 
 	@Override
 	protected void startUp()
@@ -78,6 +79,7 @@ public class SalvagingPlugin extends Plugin
             playerSalvageTracker = false;
             playerSortTracker = false;
             crewSalvageTracker = false;
+            fullCargoTracker = false;
         }
     }
 
@@ -182,6 +184,7 @@ public class SalvagingPlugin extends Plugin
             if (msg.getMessage().equals("Your crewmate on the salvaging hook cannot salvage as the cargo hold is full.")) {
                 cargoFull = true;
                 log.debug("Cargo full on salvage");
+                handleSalvageUpdate();
             }
         }
     }
@@ -203,8 +206,10 @@ public class SalvagingPlugin extends Plugin
         boolean crewSalvage = getCrewSalvaging().values().stream().anyMatch(b -> b);
         if (crewSalvage != crewSalvageTracker) { //we have an update
             if (crewSalvage) { //Crew have started salvaging
-                notifier.notify(config.crewStartSalvageNotif(), "Salvaging: Crew started salvaging");
-                crewSalvageTracker = true;
+                if(maxCrewIdleTicks() > 3) {
+                    notifier.notify(config.crewStartSalvageNotif(), "Salvaging: Crew started salvaging");
+                    crewSalvageTracker = true;
+                }
             } else { //Crew have stopped salvaging
                 if(maxCrewIdleTicks() > 3) {
                     notifier.notify(config.crewStopSalvageNotif(), "Salvaging: Crew stopped salvaging");
@@ -218,6 +223,13 @@ public class SalvagingPlugin extends Plugin
                 notifier.notify(config.playerStopSortNotif(), "Salvaging: Player stop sorting salvage");
             }
             playerSortTracker = playerSorting;
+        }
+
+        if(cargoFull != fullCargoTracker) {
+            if (cargoFull) {
+                notifier.notify(config.cargoFullNotif(), "Salvaging: Full cargo");
+            }
+            fullCargoTracker = cargoFull;
         }
     }
 
