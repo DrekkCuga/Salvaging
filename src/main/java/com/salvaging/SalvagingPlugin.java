@@ -70,8 +70,12 @@ public class SalvagingPlugin extends Plugin
 		log.debug("Salvaging plugin stopped!");
 	}
 
+    public boolean atSalvage() {
+        return isOnBoat() && !wrecks.isEmpty();
+    }
+
     @Subscribe
-    public void onGameStateChanged(GameStateChanged state) {
+    public void onGameStateChanged(GameStateChanged state) {//Sometimes it doesn't clear all the NPCs on a world hop, so force clear
         if (state.getGameState() == GameState.LOGGING_IN || state.getGameState() == GameState.HOPPING) { //Reset vars
             crewSalvaging.clear();
             crewIdleTicks.clear();
@@ -91,7 +95,7 @@ public class SalvagingPlugin extends Plugin
     }
 
     @Subscribe
-    public void onWorldViewUnloaded(WorldViewUnloaded e) {
+    public void onWorldViewUnloaded(WorldViewUnloaded e) {// Why this doesn't count as unloading the wrecks, I'll never know
         if (e.getWorldView().isTopLevel()) {
             wrecks.clear();
         }
@@ -134,14 +138,13 @@ public class SalvagingPlugin extends Plugin
     @Subscribe
     public void onGameObjectDespawned(GameObjectDespawned obj) {
         wrecks.remove(obj.getGameObject());
-        //if (obj.getGameObject().getRenderable().getModel())
     }
 
     @Subscribe
-    public void onGameTick(GameTick tick) {
+    public void onGameTick(GameTick tick) { //Tracking idle ticks so we don't send a notif in the 1 tick between wrecks swapping
         for (Actor crew : crewmates) {
             int currentIdle = crewIdleTicks.get(crew);
-            if (!crewSalvaging.get(crew) && currentIdle < 10) {//if not salvaging, cap at 10 ticks
+            if (!crewSalvaging.get(crew) && currentIdle < 10) {//if not salvaging, cap at 10 ticks so we don't have to deal with overflows
                 crewIdleTicks.replace(crew, currentIdle + 1);
                 handleSalvageUpdate();
             }
@@ -176,11 +179,7 @@ public class SalvagingPlugin extends Plugin
 
     @Subscribe
     public void onChatMessage(ChatMessage msg) {
-        if (msg.getType() == ChatMessageType.MESBOX) {
-            if (msg.getMessage().matches("^Your inventory is too full to hold any more \\w* salvage.")) {
-                log.debug("Inv full on salvage");
-            }
-        } else if (msg.getType() == ChatMessageType.SPAM) {
+        if (msg.getType() == ChatMessageType.SPAM) {
             if (msg.getMessage().equals("Your crewmate on the salvaging hook cannot salvage as the cargo hold is full.")) {
                 cargoFull = true;
                 log.debug("Cargo full on salvage");
@@ -198,7 +197,8 @@ public class SalvagingPlugin extends Plugin
     private void handleSalvageUpdate() {
         if (isPlayerSalvaging() != playerSalvageTracker) { //we have an update
             if (!isPlayerSalvaging()) { //we are no longer salvaging
-                notifier.notify(config.playerStopSalvageNotif(), "Salvaging: Player stopped salvaging");
+                if(atSalvage())
+                    notifier.notify(config.playerStopSalvageNotif(), "Salvaging: Player stopped salvaging");
             }
             playerSalvageTracker = isPlayerSalvaging();
         }
@@ -206,13 +206,13 @@ public class SalvagingPlugin extends Plugin
         boolean crewSalvage = getCrewSalvaging().values().stream().anyMatch(b -> b);
         if (crewSalvage != crewSalvageTracker) { //we have an update
             if (crewSalvage) { //Crew have started salvaging
-                if(maxCrewIdleTicks() > 3) {
+                if(atSalvage())
                     notifier.notify(config.crewStartSalvageNotif(), "Salvaging: Crew started salvaging");
-                    crewSalvageTracker = true;
-                }
+                crewSalvageTracker = true;
             } else { //Crew have stopped salvaging
                 if(maxCrewIdleTicks() > 3) {
-                    notifier.notify(config.crewStopSalvageNotif(), "Salvaging: Crew stopped salvaging");
+                    if(atSalvage())
+                        notifier.notify(config.crewStopSalvageNotif(), "Salvaging: Crew stopped salvaging");
                     crewSalvageTracker = false;
                 }
             }
@@ -220,14 +220,16 @@ public class SalvagingPlugin extends Plugin
 
         if (playerSorting != playerSortTracker) {
             if (!playerSorting) { //We are no longer sorting
-                notifier.notify(config.playerStopSortNotif(), "Salvaging: Player stopped sorting salvage");
+                if(atSalvage())
+                    notifier.notify(config.playerStopSortNotif(), "Salvaging: Player stopped sorting salvage");
             }
             playerSortTracker = playerSorting;
         }
 
         if(cargoFull != fullCargoTracker) {
             if (cargoFull) {
-                notifier.notify(config.cargoFullNotif(), "Salvaging: Full cargo");
+                if(atSalvage())
+                    notifier.notify(config.cargoFullNotif(), "Salvaging: Full cargo");
             }
             fullCargoTracker = cargoFull;
         }

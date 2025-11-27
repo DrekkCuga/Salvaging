@@ -25,7 +25,7 @@ public class SalvagingOverlay extends OverlayPanel {
 
     @Override
     public Dimension render(Graphics2D graphics) {
-        if ((plugin.isOnBoat()) && plugin.getWrecks().isEmpty()) {
+        if (!plugin.atSalvage()) { //Don't render UI
             return super.render(graphics);
         }
         boolean playerSalvaging = plugin.isPlayerSalvaging();
