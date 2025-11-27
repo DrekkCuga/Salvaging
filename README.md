@@ -3,6 +3,7 @@
 Basic notifications and UI for semi-AFK salvaging with the new Sailing skill.
 
 ## UI
+![UI](docs/salvage-ui.png)
 - The UI will show up above the chat box when you are near a salvageable shipwreck, it will also show when your cargo is full of salvage.
 
 ## Notifications
