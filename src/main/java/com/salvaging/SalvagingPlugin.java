@@ -19,7 +19,7 @@ import java.util.*;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Salvaging"
+	name = "Shipwreck Salvaging"
 )
 public class SalvagingPlugin extends Plugin
 {
@@ -220,7 +220,7 @@ public class SalvagingPlugin extends Plugin
 
         if (playerSorting != playerSortTracker) {
             if (!playerSorting) { //We are no longer sorting
-                notifier.notify(config.playerStopSortNotif(), "Salvaging: Player stop sorting salvage");
+                notifier.notify(config.playerStopSortNotif(), "Salvaging: Player stopped sorting salvage");
             }
             playerSortTracker = playerSorting;
         }
