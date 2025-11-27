@@ -34,7 +34,7 @@ public interface SalvagingConfig extends Config
 
     @ConfigItem(
             keyName = "playerStopSortNotif",
-            name = "Player Stop Sort Notification",
+            name = "Player Stop Sorting Notification",
             description = "Send notification when the player stops sorting salvage"
     )
     default Notification playerStopSortNotif() {
